@@ -1,0 +1,15 @@
+#pannel table {
+	border-collapse: collapse;
+	margin-bottom: 10px;
+}
+#pannel td {
+	width: 10px;
+	height: 10px;
+	border: 1px solid black;
+}
+.food {
+	background: black;
+}
+.snake {
+	background: green;
+}
