@@ -78,7 +78,7 @@
 	};
 	/*Snake构造器*/
 	function Snake () {
-		var headX, headY, pos = [], that = this;
+		var headX, headY, pos = [];
 		/*创建蛇*/
 		this.create = function () {
 			var x = g.create(g.setting.len, g.setting.size / 2),
@@ -89,6 +89,7 @@
 				pos.push([x, y]);
 				g.attr(x, y, "class", "snake");
 			}
+			g.attr(pos[0][0], pos[0][1], "class", "snake head");
 		};
 		/*移动*/
 		this.move = function () {
@@ -111,6 +112,7 @@
 			pos[0][1] = headY;
 			for (var i = 0; i < pos.length; i ++)
 				g.attr(pos[i][0], pos[i][1], "class", "snake");
+			g.attr(headX, headY, "class", "snake head")
 			var inside = g.attr(headX, headY, "inside");
 			if (inside == "food") {
 				lastX = pos[pos.length - 1][0];

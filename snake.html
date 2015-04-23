@@ -6,11 +6,20 @@
 	<link rel="stylesheet" type="text/css" href="snake.css" />
 </head>
 <body>
-	<div id="game">
-		<div id="pannel"></div>
-	</div>
-	<div id="button">
-		<input type="button" id="start" value="start" />
+	<div class="container">
+		<div id="game">
+			<div id="pannel"></div>
+			<div id="button">
+				<button type="button" class="btn" id="start" value="start">start</button>		
+			</div>
+			<div id="gameSetting">
+				<select name="gameSpeed" id="gameSpeed">
+					<option value="300">fast</option>
+					<option value="500">normal</option>
+					<option value="800">slow</option>
+				</select>
+			</div>
+		</div>
 	</div>
 </body>
 <script type="text/javascript" src="snake.js"></script>

@@ -1,10 +1,78 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+.container {
+	width: 1080px;
+	padding-right: 15px;
+	padding-left: 15px;
+	margin: 20px auto;
+}
+.btn {
+	display: inline-block;
+	padding: 6px 12px;
+	margin-bottom: 0;
+	font-size: 14px;
+	font-weight: normal;
+	line-height: 1.42857143;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: middle;
+	cursor: pointer;
+	background-color: #fff;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+.btn:focus,
+.btn:active:focus {
+	outline: thin dotted;
+	outline: 5px auto -webkit-focus-ring-color;
+	outline-offset: -2px;
+}
+.btn:hover,
+.btn:focus {
+	color: #333;
+	background-color: #e6e6e6;
+	text-decoration: none;
+}
+.btn:active {
+	background-image: none;
+	outline: 0;
+	-webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+	box-shadow: 0 3px 5px rgba(0, 0, 0, .125) inset;
+}
+.btn.disabled,
+.btn[disabled],
+fieldset[disabled] .btn {
+	pointer-events: none;
+	cursor: not-allowed;
+	filter: alpha(opacity=65);
+	-webkit-box-shadow: none;
+	box-shadow: none;
+	opacity: .65;
+}
+select {
+	width: 70px;
+	height: 35px;
+	line-height: 35px;
+	text-align: center;
+}
+#game {
+	width: 400px;
+	height: auto;
+	margin: auto;
+}
+#button {
+	float: left;
+	margin-right: 10px;
+}
 #pannel table {
-	border-collapse: collapse;
 	margin-bottom: 10px;
 }
 #pannel td {
-	width: 10px;
-	height: 10px;
+	width: 15px;
+	height: 15px;
+	border-radius: 5px;
 	border: 1px solid black;
 }
 .food {
@@ -12,4 +80,7 @@
 }
 .snake {
 	background: green;
+}
+.head {
+	background: red;
 }
