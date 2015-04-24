@@ -67,13 +67,14 @@ select {
 	margin-right: 10px;
 }
 #pannel table {
+	border-radius: 10px;
 	margin-bottom: 10px;
+	border: 1px solid black;
 }
 #pannel td {
 	width: 15px;
 	height: 15px;
 	border-radius: 5px;
-	border: 1px solid black;
 }
 .food {
 	background: black;

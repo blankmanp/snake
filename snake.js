@@ -39,7 +39,7 @@
 		for (var i = 0; i < g.setting.size; i ++) {
 			t.push("<tr class = 'row' y = " + i + ">");
 			for (var j = 0; j < g.setting.size; j ++) {
-				t.push("<td id = 'box_" + j + "_" + i + "'></td>");
+				t.push("<td id = 'box_" + j + "_" + i + "' inside = ' '></td>");
 			}
 			t.push("</tr>");
 		}
@@ -48,6 +48,7 @@
 	};
 	/*初始化游戏*/
 	Game.prototype.init = function () {
+		snake.init();
 		if (g.setting.func)
 			window.clearInterval(g.setting.func);
 		var d = document.getElementById("start"); 
@@ -60,7 +61,6 @@
 	/*游戏开始*/
 	Game.prototype.start = function () {
 		g.setting.direct = g.direction.down;
-		var snake = new Snake(), food = new Food();
 		food.create();
 		snake.create();
 		//蛇移动
@@ -87,6 +87,10 @@
 		this.lastY = 0;
 		this.pos = [];
 	};
+	Snake.prototype.init = function () {
+		this.headX = this.headY = this.lastX = this.lastY = 0;
+		this.pos = [];
+	}
 	/*创建蛇*/
 	Snake.prototype.create = function () {
 		var x = g.create(g.setting.len, g.setting.size / 2),
@@ -142,8 +146,8 @@
 				this.lastX = this.pos[this.pos.length - 1][0];
 				this.lastY = this.pos[this.pos.length - 1][1];
 				g.attr(this.lastX, this.lastY, "class", "snake");
-				var food = new Food();
 				food.create();
+				g.attr(this.headX, this.headY, "inside", " ");
 			};
 			//撞到自己或者墙，游戏结束
 			for (var i = 1; i < this.pos.length; i ++) {
@@ -174,7 +178,7 @@
 		}
 	};
 
-	var game = new Game();
+	var game = new Game(), food = new Food(), snake = new Snake();
 	game.pannel();
 	game.init();
 	document.getElementById("start").onclick = function () {
