@@ -49,11 +49,9 @@
 	/*初始化游戏*/
 	Game.prototype.init = function () {
 		snake.init();
+		speed.disabled = start.disabled = false;
 		if (g.setting.func)
 			window.clearInterval(g.setting.func);
-		var d = document.getElementById("start"); 
-		if (d)
-			d.disabled = false;
 		for (var x = 0; x < g.setting.size; x ++)
 			for (var y = 0; y < g.setting.size; y ++)
 				g.attr(x, y, "class", " ");
@@ -178,13 +176,14 @@
 		}
 	};
 
-	var game = new Game(), food = new Food(), snake = new Snake();
+	var game = new Game(), food = new Food(), snake = new Snake(), speed = document.getElementById("gameSpeed"), start = document.getElementById("start");
 	game.pannel();
 	game.init();
-	document.getElementById("start").onclick = function () {
+	start.onclick = function () {
 		this.disabled = true;
+		g.setting.speed = speed.options[speed.selectedIndex].value;
+		speed.disabled = true;
 		game.start();
 		window.onkeydown = game.listen;
 	}
-
 })()
