@@ -69,7 +69,7 @@
 	/*监听键盘*/
 	Game.prototype.listen = function (e) {
 		e = e || event;
-		g.setting.direct = Math.abs(e.keyCode - g.setting.direct) != 2 && e.keyCode > 36 && e.keyCode < 41 ? e.keyCode : g.setting.direct;
+		command.push(Math.abs(e.keyCode - g.setting.direct) != 2 && e.keyCode > 36 && e.keyCode < 41 ? e.keyCode : g.setting.direct);
 	}
 	/*游戏结束*/
 	Game.prototype.over = function () {
@@ -114,6 +114,10 @@
 				this.pos[i][0] = this.pos[i - 1][0];
 				this.pos[i][1] = this.pos[i - 1][1];
 			}
+			if (command.length == 0)
+				command.push(g.setting.direct);
+			g.setting.direct = command.shift();
+			command = [];
 			switch (g.setting.direct) {
 				case g.direction.up : this.headY    -= 1; break;
 				case g.direction.down : this.headY  += 1; break;
@@ -176,7 +180,7 @@
 		}
 	};
 
-	var game = new Game(), food = new Food(), snake = new Snake(), speed = document.getElementById("gameSpeed"), start = document.getElementById("start");
+	var command = [], game = new Game(), food = new Food(), snake = new Snake(), speed = document.getElementById("gameSpeed"), start = document.getElementById("start");
 	game.pannel();
 	game.init();
 	start.onclick = function () {
