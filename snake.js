@@ -190,4 +190,18 @@
 		game.start();
 		window.onkeydown = game.listen;
 	}
+	document.getElementsByClassName("switch")[0].onclick = function() {
+		var cla = this.firstChild.className.split(" ");
+		for (var i = 0; i < cla.length; i ++) {
+			if (cla[i] == "switch-off") {
+				cla[i] = "switch-on";
+				break;
+			}
+			else if (cla[i] == "switch-on") {
+				cla[i] = "switch-off";
+				break;
+			}
+		}
+		this.firstChild.className = cla.join(" ");
+	}
 })()

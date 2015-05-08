@@ -1,6 +1,9 @@
 * {
 	margin: 0;
 	padding: 0;
+	-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
 }
 .container {
 	width: 1080px;
@@ -57,6 +60,11 @@ select {
 	line-height: 35px;
 	text-align: center;
 }
+#gameSpeed {
+	position: relative;
+	display: inline-block;
+	margin-left: 20px;
+}
 #game {
 	width: 400px;
 	height: auto;
@@ -85,4 +93,85 @@ select {
 }
 .head {
 	background: red;
+}
+
+.switch {
+	display: inline-block;
+	min-width: 120px;
+	margin-left: 20px;
+	height: 40px;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	cursor: pointer;
+	overflow: hidden;
+	text-align: left;
+}
+.switch>div {
+	top: 0;
+	display: inline-block;
+	width: 150%;
+	height: 100%;
+	position: relative;
+	overflow: hidden;
+}
+.switch-animate {
+	-webkit-transition: left 0.5s ease 0.5s;
+	-o-transition: left 0.5s ease 0.5s;
+	transition: left 0.5s ease 0.5s;
+}
+.switch-on {
+	left: 0;
+}
+.switch-off {
+	left: -50%;
+}
+.switch-left, .switch-right {
+	display: inline-block;
+	width: 33%;
+	height: 100%;
+	padding-bottom: 9px;
+	padding-top: 9px;
+	line-height: normal;
+	font-size: 16px;
+	background-color: #005fcc;
+	background-image: -webkit-linear-gradient(#0044cc, #0088cc);
+	background-image: -o-linear-gradient(#0044cc, #0088cc);
+	background-image: linear-gradient(#0044cc, #0088cc);
+	background-repeat: repeat-x;
+	border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+	border-bottom-left-radius: 4px;
+	border-top-left-radius: 4px;
+	color: #ffffff;
+	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+	text-align: center;
+}
+.switch-right {
+	background-color: #f0f0f0;
+	background-image: -webkit-linear-gradient(#e6e6e6, #ffffff);
+	background-image: -o-linear-gradient(#e6e6e6, #ffffff);
+	background-image: linear-gradient(#e6e6e6, #ffffff);
+	background-repeat: repeat-x;
+	border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+	color: #333333;
+	text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+	border-bottom-left-radius: 0;
+	border-top-left-radius: 0;
+}
+.switch-label {
+	display: inline-block;
+	width: 34%;
+	height: 100%;
+	cursor: pointer;
+	background-color: #f5f5f5;
+	background-image: -webkit-linear-gradient(#ffffff, #e6e6e6);
+	background-image: -o-linear-gradient(#ffffff, #e6e6e6);
+	background-image: linear-gradient(#ffffff, #e6e6e6);
+	background-repeat: repeat-x;
+}
+
+.pullLeft {
+	float: left;
+}
+.clear {
+	clear: both;
 }
