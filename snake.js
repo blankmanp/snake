@@ -13,6 +13,59 @@
 		create : function (start, end) {
 			return Math.floor(Math.random() * (end - start) + start);
 		},
+		addHandler: function (ele, type, handler) {
+			if (ele.length === undefined) {
+				if (ele.addEventListener) {
+					ele.addEventListener(type, handler, false);
+				}
+				else if (ele.attachEvent) {
+					ele.attachEvent("on" + type, handler);
+				}
+				else {
+					ele['on' + type] = handler;
+				}
+			}
+			else if (ele.length === 0) {
+				console.log("The element is null!");
+				return false;
+			}
+			else {
+				for (var i = 0; i < ele.length; i ++) {
+					if (ele[i].addEventListener) {
+						ele[i].addEventListener(type, handler, false);
+					}
+					else if (ele[i].attachEvent) {
+						ele[i].attachEvent("on" + type, handler);
+					}
+					else {
+						ele[i]['on' + type] = handler;
+					}
+				}
+			}
+		},
+		removeHandler: function(element, type, handler) {
+			if (ele.length === undefined) {
+				if (ele.removeEventListener)
+					ele.removeEventListener(type, handler, false);
+				else if (ele.detachEvent)
+					ele.detachEvent("on" + type, handler);
+				else
+					ele['on' + type] = null;
+			}
+			else if (ele.length === 0) {
+				return (console.log("the element is null"));
+			}
+			else {
+				for (var i = 0; i < ele.length; i ++) {
+					if (ele[i].removeEventListener)
+					ele[i].removeEventListener(type, handler, false);
+				else if (ele[i].detachEvent)
+					ele[i].detachEvent("on" + type, handler);
+				else
+					ele[i]['on' + type] = null;
+				}
+			}
+		},
 		//运动方向
 		direction : {
 			left : 37,
@@ -180,21 +233,33 @@
 		}
 	};
 
+
 	var command = [], game = new Game(), food = new Food(), snake = new Snake(), speed = document.getElementById("gameSpeed"), start = document.getElementById("start");
 	game.pannel();
 	game.init();
-	start.onclick = function () {
+	function gameStart() {
 		this.disabled = true;
 		g.setting.speed = speed.options[speed.selectedIndex].value;
 		speed.disabled = true;
 		game.start();
 		window.onkeydown = game.listen;
+	};
+	function switchChange() {
+		var cla = this.firstChild.className.split(" ");
+		for (var i = 0; i < cla.length; i ++) {
+			if (cla[i] == "switch-animate") {
+				cla.splice(i, 1);
+				break;
+			}
+		}
+		cla = cla.join(" ");
+		this.firstChild.className = cla;
 	}
-	document.getElementsByClassName("switch")[0].onclick = function() {
+	function switchAnimate() {
 		var cla = this.firstChild.className.split(" ");
 		for (var i = 0; i < cla.length; i ++) {
 			if (cla[i] == "switch-off") {
-				cla[i] = "switch-on";
+				cla.splice(i, 1, "switch-on");
 				break;
 			}
 			else if (cla[i] == "switch-on") {
@@ -202,6 +267,12 @@
 				break;
 			}
 		}
-		this.firstChild.className = cla.join(" ");
+		cla.push("switch-animate");
+		cla = cla.join(" ");
+		console.log(cla);
+		this.firstChild.className = cla;
 	}
+	g.addHandler(start, "click", gameStart);
+	g.addHandler(document.getElementsByClassName("switch"), 'mousedown', switchChange);
+	g.addHandler(document.getElementsByClassName("switch"), 'mouseup', switchAnimate);
 })()

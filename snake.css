@@ -115,9 +115,9 @@ select {
 	overflow: hidden;
 }
 .switch-animate {
-	-webkit-transition: left 0.5s ease 0.5s;
-	-o-transition: left 0.5s ease 0.5s;
-	transition: left 0.5s ease 0.5s;
+	-webkit-transition: left 0.5s ease;
+	-o-transition: left 0.5s ease;
+	transition: left 0.5s ease;
 }
 .switch-on {
 	left: 0;
