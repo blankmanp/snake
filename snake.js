@@ -92,7 +92,7 @@
 		for (var i = 0; i < g.setting.size; i ++) {
 			t.push("<tr class = 'row' y = " + i + ">");
 			for (var j = 0; j < g.setting.size; j ++) {
-				t.push("<td id = 'box_" + j + "_" + i + "' inside = ' '></td>");
+				t.push("<td id = 'box_" + j + "_" + i + "' inside = ' ' x = '" + j + "' y = '" + i + "'></td>");
 			}
 			t.push("</tr>");
 		}
@@ -111,13 +111,17 @@
 	}
 	/*游戏开始*/
 	Game.prototype.start = function () {
-		g.setting.direct = g.direction.down;
 		food.create();
 		snake.create();
-		//蛇移动
+		g.setting.direct = g.direction.down;
 		g.setting.func = window.setInterval(function() {
 			snake.move();
-		}, g.setting.speed);
+			snake.AIMode();
+		}, g.setting.speed)
+		//蛇移动
+		//g.setting.func = window.setInterval(function() {
+		//	snake.move();
+		//}, g.setting.speed);
 	}
 	/*监听键盘*/
 	Game.prototype.listen = function (e) {
@@ -137,6 +141,8 @@
 		this.lastX = 0;
 		this.lastY = 0;
 		this.pos = [];
+		this.f = 0;
+		this.h = 0;
 	};
 	Snake.prototype.init = function () {
 		this.headX = this.headY = this.lastX = this.lastY = 0;
@@ -158,65 +164,119 @@
 	};
 	/*移动*/
 	Snake.prototype.move = function () {
-			this.headX = this.pos[0][0];
-			this.headY = this.pos[0][1];
+		this.headX = this.pos[0][0];
+		this.headY = this.pos[0][1];
+		this.lastX = this.pos[this.pos.length - 1][0];
+		this.lastY = this.pos[this.pos.length - 1][1];
+		g.attr(this.lastX, this.lastY, "class", " ");
+		for (var i = this.pos.length - 1; i > 0; i --) {
+			this.pos[i][0] = this.pos[i - 1][0];
+			this.pos[i][1] = this.pos[i - 1][1];
+		}
+		if (command.length == 0)
+			command.push(g.setting.direct);
+		g.setting.direct = command.shift();
+		command = [];
+		switch (g.setting.direct) {
+			case g.direction.up : this.headY    -= 1; break;
+			case g.direction.down : this.headY  += 1; break;
+			case g.direction.left : this.headX  -= 1; break;
+			case g.direction.right : this.headX += 1; break;
+		}
+		this.pos[0][0] = this.headX;
+		this.pos[0][1] = this.headY;
+		for (var i = 0; i < this.pos.length; i ++)
+			g.attr(this.pos[i][0], this.pos[i][1], "class", "snake");
+		g.attr(this.headX, this.headY, "class", "snake head")
+		var inside = g.attr(this.headX, this.headY, "inside");
+		if (inside == "food") {
 			this.lastX = this.pos[this.pos.length - 1][0];
 			this.lastY = this.pos[this.pos.length - 1][1];
-			g.attr(this.lastX, this.lastY, "class", " ");
-			for (var i = this.pos.length - 1; i > 0; i --) {
-				this.pos[i][0] = this.pos[i - 1][0];
-				this.pos[i][1] = this.pos[i - 1][1];
+			if (this.lastX == this.pos[this.pos.length - 2][0]) {
+				if (this.lastY - this.pos[this.pos.length - 2][1] == 1)
+					this.pos.push([this.lastX, this.lastY + 1]);
+				else if (this.pos[this.pos.length - 2][1] - this.lastY == 1)
+					this.pos.push([this.lastX, this.lastY - 1]);
 			}
-			if (command.length == 0)
-				command.push(g.setting.direct);
-			g.setting.direct = command.shift();
-			command = [];
-			switch (g.setting.direct) {
-				case g.direction.up : this.headY    -= 1; break;
-				case g.direction.down : this.headY  += 1; break;
-				case g.direction.left : this.headX  -= 1; break;
-				case g.direction.right : this.headX += 1; break;
+			else if (this.lastY == this.pos[this.pos.length - 2][1]) {
+				if (this.lastX - this.pos[this.pos.length - 2][0] == 1)
+					this.pos.push([this.lastX + 1, this.lastY])
+				else if (this.pos[this.pos.length - 2][0] - this.lastX == 1)
+					this.pos.push([this.lastX - 1, this.lastY]);
 			}
-			this.pos[0][0] = this.headX;
-			this.pos[0][1] = this.headY;
-			for (var i = 0; i < this.pos.length; i ++)
-				g.attr(this.pos[i][0], this.pos[i][1], "class", "snake");
-			g.attr(this.headX, this.headY, "class", "snake head")
-			var inside = g.attr(this.headX, this.headY, "inside");
-			if (inside == "food") {
-				this.lastX = this.pos[this.pos.length - 1][0];
-				this.lastY = this.pos[this.pos.length - 1][1];
-				if (this.lastX == this.pos[this.pos.length - 2][0]) {
-					if (this.lastY - this.pos[this.pos.length - 2][1] == 1)
-						this.pos.push([this.lastX, this.lastY + 1]);
-					else if (this.pos[this.pos.length - 2][1] - this.lastY == 1)
-						this.pos.push([this.lastX, this.lastY - 1]);
-				}
-				else if (this.lastY == this.pos[this.pos.length - 2][1]) {
-					if (this.lastX - this.pos[this.pos.length - 2][0] == 1)
-						this.pos.push([this.lastX + 1, this.lastY])
-					else if (this.pos[this.pos.length - 2][0] - this.lastX == 1)
-						this.pos.push([this.lastX - 1, this.lastY]);
-				}
-				this.lastX = this.pos[this.pos.length - 1][0];
-				this.lastY = this.pos[this.pos.length - 1][1];
-				g.attr(this.lastX, this.lastY, "class", "snake");
-				food.create();
-				g.attr(this.headX, this.headY, "inside", " ");
-			};
-			//撞到自己或者墙，游戏结束
-			for (var i = 1; i < this.pos.length; i ++) {
-				if (this.headX == this.pos[i][0] && this.headY == this.pos[i][1])
-					game.over();
-				else
-					continue;
-			}
-			if (this.headX > 19 || this.headX < 0 || this.headY > 19 || this.headY < 0)
-				game.over();
+			this.lastX = this.pos[this.pos.length - 1][0];
+			this.lastY = this.pos[this.pos.length - 1][1];
+			g.attr(this.lastX, this.lastY, "class", "snake");
+			food.create();
+			g.attr(this.headX, this.headY, "inside", " ");
 		};
+		//撞到自己或者墙，游戏结束
+		for (var i = 1; i < this.pos.length; i ++) {
+			if (this.headX == this.pos[i][0] && this.headY == this.pos[i][1])
+				game.over();
+			else
+				continue;
+		}
+		if (this.headX > 19 || this.headX < 0 || this.headY > 19 || this.headY < 0)
+			game.over();
+	};
+	Snake.prototype.AIMode = function() {
+		var head = [snake.headX, snake.headY],
+			tail = [snake.lastX, snake.lastY],
+			foodPos = food.pos,
+			i = g.setting.direct;
+		snake.Astar(head, foodPos);
+	};
+	/* Astar算法 JS实现 */
+	Snake.prototype.Astar = function(start, end) {
+		var astarpos = [], startX = start[0], startY = start[1], endX = end[0], endY = end[1], astardistance = [];
+		for (var i = -1; i < 2; i ++) {
+			if (i == 0) {
+				continue;
+			}
+			if (g.attr(startX + i, startY, "class")
+				&& g.attr(startX + i, startY, "class").indexOf("snake") == -1 
+				&& startX + i < g.setting.size 
+				&& startX + i >= 0) {
+				astarpos.push([startX + i, startY]);
+			}
+			if (g.attr(startX, startY + i, "class")
+				&& g.attr(startX, startY + i, "class").indexOf("snake") == -1 
+				&& startY + i < g.setting.size 
+				&& startY + i >= 0) {
+				astarpos.push([startX, startY + i]);
+			}
+		};
+		if (astarpos.length == 0) {
+			alert("The AI mode isn't perfect : (");
+			game.over();
+		}
+		else {
+			for (var i = 0; i < astarpos.length; i ++) {
+				var distance = Math.sqrt(Math.pow(astarpos[i][0] - end[0], 2) + Math.pow(astarpos[i][1] - end[1], 2));
+				astardistance.push([distance, astarpos[i]]);
+			}
+		}
+		astardistance.sort(function(a, b) {
+			return a[0] - b[0];
+		});
+		if (astardistance[0][1][0] - startX > 0) {
+			g.setting.direct = g.direction.right;
+		};
+		if (astardistance[0][1][0] - startX < 0) {
+			g.setting.direct = g.direction.left;
+		};
+		if (astardistance[0][1][1] - startY > 0) {
+			g.setting.direct = g.direction.down;
+		};
+		if (astardistance[0][1][1] - startY < 0) {
+			g.setting.direct = g.direction.up;
+		};
+	}
 	
 	/*Food构造器*/
 	function Food () {
+		this.pos = [];
 	};
 		/*创建食物*/
 	Food.prototype.create = function () {
@@ -231,6 +291,7 @@
 			g.attr(x, y, "class", "food");
 			g.attr(x, y, "inside", "food");
 		}
+		this.pos = [x, y];
 	};
 
 
@@ -269,7 +330,6 @@
 		}
 		cla.push("switch-animate");
 		cla = cla.join(" ");
-		console.log(cla);
 		this.firstChild.className = cla;
 	}
 	g.addHandler(start, "click", gameStart);
