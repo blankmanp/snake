@@ -224,12 +224,44 @@
 		var head = [snake.headX, snake.headY],
 			tail = [snake.lastX, snake.lastY],
 			foodPos = food.pos,
-			i = g.setting.direct;
-		snake.Astar(head, foodPos);
+			i = g.setting.direct,
+			tailPath = snake.existPath(foodPos, tail);
+		if (tailPath) {
+			snake.path(head, foodPos, 0);
+			var headPath = false;
+			switch(g.setting.direct) {
+				case g.direction.down:
+					if (head[1] + 1 < g.setting.size) {
+						headPath = snake.existPath([head[0], head[1] + 1], tail);
+					}
+					break;
+				case g.direction.up:
+					if (head[1] - 1 >= 0) {
+						headPath = snake.existPath([head[0], head[1] - 1], tail);
+					}
+					break;
+				case g.direction.left:
+					if (head[0] - 1 >= 0) {
+						headPath = snake.existPath([head[0] - 1, head[1]], tail);
+					}
+					break;
+				case g.direction.right:
+					if (head[0] + 1 < g.setting.size) {
+						headPath = snake.existPath([head[0] + 1, head[1]], tail);
+					}
+					break;
+			}
+			if (!headPath) {
+				snake.path(head, foodPos, 1);
+			}
+		}
+		else {
+			snake.path(head, foodPos, 1);
+		}
 	};
-	/* Astar算法 JS实现 */
-	Snake.prototype.Astar = function(start, end) {
-		var astarpos = [], startX = start[0], startY = start[1], endX = end[0], endY = end[1], astardistance = [];
+	/* 算法JS实现 */
+	Snake.prototype.path = function(start, end, reverse) {
+		var pos = [], startX = start[0], startY = start[1], endX = end[0], endY = end[1], distance = [];
 		for (var i = -1; i < 2; i ++) {
 			if (i == 0) {
 				continue;
@@ -238,40 +270,100 @@
 				&& g.attr(startX + i, startY, "class").indexOf("snake") == -1 
 				&& startX + i < g.setting.size 
 				&& startX + i >= 0) {
-				astarpos.push([startX + i, startY]);
+				pos.push([startX + i, startY]);
 			}
 			if (g.attr(startX, startY + i, "class")
 				&& g.attr(startX, startY + i, "class").indexOf("snake") == -1 
 				&& startY + i < g.setting.size 
 				&& startY + i >= 0) {
-				astarpos.push([startX, startY + i]);
+				pos.push([startX, startY + i]);
 			}
 		};
-		if (astarpos.length == 0) {
+		if (pos.length == 0) {
 			alert("The AI mode isn't perfect : (");
 			game.over();
 		}
 		else {
-			for (var i = 0; i < astarpos.length; i ++) {
-				var distance = Math.sqrt(Math.pow(astarpos[i][0] - end[0], 2) + Math.pow(astarpos[i][1] - end[1], 2));
-				astardistance.push([distance, astarpos[i]]);
+			for (var i = 0; i < pos.length; i ++) {
+				var dis = Math.sqrt(Math.pow(pos[i][0] - end[0], 2) + Math.pow(pos[i][1] - end[1], 2));
+				distance.push([dis, pos[i]]);
 			}
 		}
-		astardistance.sort(function(a, b) {
-			return a[0] - b[0];
-		});
-		if (astardistance[0][1][0] - startX > 0) {
+		if (reverse) {
+			distance.sort(function(a, b) {
+				return b[0] - a[0];
+			})
+		}
+		else {
+			distance.sort(function(a, b) {
+				return a[0] - b[0];
+			});
+		}
+		if (distance[0][1][0] - startX > 0) {
 			g.setting.direct = g.direction.right;
 		};
-		if (astardistance[0][1][0] - startX < 0) {
+		if (distance[0][1][0] - startX < 0) {
 			g.setting.direct = g.direction.left;
 		};
-		if (astardistance[0][1][1] - startY > 0) {
+		if (distance[0][1][1] - startY > 0) {
 			g.setting.direct = g.direction.down;
 		};
-		if (astardistance[0][1][1] - startY < 0) {
+		if (distance[0][1][1] - startY < 0) {
 			g.setting.direct = g.direction.up;
 		};
+	}
+	/* BFS算法实现寻找路径 */
+	Snake.prototype.existPath = function(start, end) {
+		var visited = [], que = [], parent = [];
+		for (var i = 0; i < g.setting.size; i ++) {
+			visited[i] = [];
+			parent[i] = [];
+			for (var j = 0; j < g.setting.size; j ++) {
+				visited[i][j] = false;
+				parent[i][j] = -1;
+			}
+		}
+		que.push(start);
+		var tempque = [];
+		tempque.push(start);
+		while (tempque.length) {
+			start = tempque.shift();
+			var x = start[0], y = start[1];
+			for (var i = -1; i <= 1; i ++) {
+				if (i === 0) {
+					continue;
+				}
+				else {
+					if (x + i < g.setting.size
+						&& x + i >= 0
+						&& g.attr(x + i, y, "class")
+						&& g.attr(x + i, y, "class").indexOf("snake") == -1
+						&& !visited[x + i][y]) {
+						tempque.push([x + i, y]);
+						que.push([x + i, y]);
+						visited[x + i][y] = true;
+						parent[x + i][y] = [x, y];
+					}
+					if (!visited[x][y + i]
+						&& y + i < g.setting.size
+						&& y + i >=0
+						&& g.attr(x, y + i, "class")
+						&& g.attr(x, y + i, "class").indexOf("snake") == -1) {
+						tempque.push([x, y + i]);
+						que.push([x, y + i]);
+						visited[x][y + i] = true;
+						parent[x][y + i] = [x, y];
+					}
+				}
+			}
+		}
+		if (que.length) {
+			for (var i = 0; i < que.length; i ++) {
+				if (que[i][0] === end[0] && que[i][1] === end[1])
+					return true;
+			}
+		}
+		return false;
 	}
 	
 	/*Food构造器*/
@@ -303,7 +395,7 @@
 		g.setting.speed = speed.options[speed.selectedIndex].value;
 		speed.disabled = true;
 		game.start();
-		window.onkeydown = game.listen;
+		//window.onkeydown = game.listen;
 	};
 	function switchChange() {
 		var cla = this.firstChild.className.split(" ");
