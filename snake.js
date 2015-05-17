@@ -101,6 +101,8 @@
 	};
 	/*初始化游戏*/
 	Game.prototype.init = function () {
+		score = 0;
+		document.getElementById("score").innerHTML = score;
 		snake.init();
 		speed.disabled = start.disabled = false;
 		if (g.setting.func)
@@ -156,10 +158,15 @@
 		for (var i = 0; i < g.setting.len; i ++) {
 			y --;
 			this.pos.push([x, y]);
-			if (i == 0)
+			if (i === 0) {
 				g.attr(x, y, "class", "snake head");
-			else
-				g.attr(x, y, "class", "snake")
+			}
+			else if (i === g.setting.len - 1){
+				g.attr(x, y, "class", "snake tail")
+			}
+			else {
+				g.attr(x, y, "class", "snake");
+			}
 		}
 	};
 	/*移动*/
@@ -185,9 +192,12 @@
 		}
 		this.pos[0][0] = this.headX;
 		this.pos[0][1] = this.headY;
+		this.lastX = this.pos[this.pos.length - 1][0];
+		this.lastY = this.pos[this.pos.length - 1][1];
 		for (var i = 0; i < this.pos.length; i ++)
 			g.attr(this.pos[i][0], this.pos[i][1], "class", "snake");
-		g.attr(this.headX, this.headY, "class", "snake head")
+		g.attr(this.headX, this.headY, "class", "snake head");
+		g.attr(this.lastX, this.lastY, "class", "snake tail");
 		var inside = g.attr(this.headX, this.headY, "inside");
 		if (inside == "food") {
 			this.lastX = this.pos[this.pos.length - 1][0];
@@ -206,8 +216,10 @@
 			}
 			this.lastX = this.pos[this.pos.length - 1][0];
 			this.lastY = this.pos[this.pos.length - 1][1];
-			g.attr(this.lastX, this.lastY, "class", "snake");
+			g.attr(this.lastX, this.lastY, "class", "snake tail");
 			food.create();
+			score ++;
+			document.getElementById("score").innerHTML = score;
 			g.attr(this.headX, this.headY, "inside", " ");
 		};
 		//撞到自己或者墙，游戏结束
@@ -217,12 +229,12 @@
 			else
 				continue;
 		}
-		if (this.headX > 19 || this.headX < 0 || this.headY > 19 || this.headY < 0)
+		if (this.headX > (g.setting.size - 1) || this.headX < 0 || this.headY > (g.setting.size - 1) || this.headY < 0)
 			game.over();
 	};
 	Snake.prototype.AIMode = function() {
-		var head = [snake.headX, snake.headY],
-			tail = [snake.lastX, snake.lastY],
+		var head = [this.headX, this.headY],
+			tail = [this.lastX, this.lastY],
 			foodPos = food.pos,
 			i = g.setting.direct,
 			tailPath = snake.existPath(foodPos, tail);
@@ -252,11 +264,11 @@
 					break;
 			}
 			if (!headPath) {
-				snake.path(head, foodPos, 1);
+				snake.path(head, tail, 0);
 			}
 		}
 		else {
-			snake.path(head, foodPos, 1);
+			snake.path(head, tail, 0);
 		}
 	};
 	/* 算法JS实现 */
@@ -274,14 +286,13 @@
 			}
 			if (g.attr(startX, startY + i, "class")
 				&& g.attr(startX, startY + i, "class").indexOf("snake") == -1 
-				&& startY + i < g.setting.size 
+				&& startY + i < g.setting.size
 				&& startY + i >= 0) {
 				pos.push([startX, startY + i]);
 			}
 		};
 		if (pos.length == 0) {
-			alert("The AI mode isn't perfect : (");
-			game.over();
+			alert("The AI mode isn't perfect TAT");
 		}
 		else {
 			for (var i = 0; i < pos.length; i ++) {
@@ -337,30 +348,32 @@
 					if (x + i < g.setting.size
 						&& x + i >= 0
 						&& g.attr(x + i, y, "class")
-						&& g.attr(x + i, y, "class").indexOf("snake") == -1
+						&& (g.attr(x + i, y, "class").indexOf("snake") == -1
+							|| g.attr(x + i, y, "class").indexOf("tail") != -1)
 						&& !visited[x + i][y]) {
 						tempque.push([x + i, y]);
-						que.push([x + i, y]);
+						que.push([x + i, y])
 						visited[x + i][y] = true;
 						parent[x + i][y] = [x, y];
+						if (x + i === end[0] && y === end[1]) {
+							return true;
+						}
 					}
-					if (!visited[x][y + i]
-						&& y + i < g.setting.size
+					if (y + i < g.setting.size
 						&& y + i >=0
 						&& g.attr(x, y + i, "class")
-						&& g.attr(x, y + i, "class").indexOf("snake") == -1) {
+						&& (g.attr(x, y + i, "class").indexOf("snake") == -1
+							|| g.attr(x, y + i, "class").indexOf("tail") != -1)
+						&& !visited[x][y + i]) {
 						tempque.push([x, y + i]);
-						que.push([x, y + i]);
+						que.push([x, y + i])
 						visited[x][y + i] = true;
 						parent[x][y + i] = [x, y];
+						if (x === end[0] && y + i === end[1]) {
+							return true;
+						}
 					}
 				}
-			}
-		}
-		if (que.length) {
-			for (var i = 0; i < que.length; i ++) {
-				if (que[i][0] === end[0] && que[i][1] === end[1])
-					return true;
 			}
 		}
 		return false;
@@ -387,7 +400,7 @@
 	};
 
 
-	var command = [], game = new Game(), food = new Food(), snake = new Snake(), speed = document.getElementById("gameSpeed"), start = document.getElementById("start");
+	var command = [], game = new Game(), food = new Food(), snake = new Snake(), speed = document.getElementById("gameSpeed"), start = document.getElementById("start"), score = 0;
 	game.pannel();
 	game.init();
 	function gameStart() {
