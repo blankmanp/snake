@@ -236,7 +236,6 @@
 		var head = [this.headX, this.headY],
 			tail = [this.lastX, this.lastY],
 			foodPos = food.pos,
-			i = g.setting.direct,
 			tailPath = this.existPath(tail, foodPos);
 		if (tailPath.length) {
 			var headPath = this.existPath(head, foodPos);
@@ -280,7 +279,11 @@
 		}
 		var tempque = [];
 		tempque.push(start);
-		visited[start[0]][start[1]] = true;
+		if (start) {
+			if (!visited[start[0]])
+				console.log(start);
+			visited[start[0]][start[1]] = true;
+		}
 		while (tempque.length) {
 			start = tempque.shift();
 			var x = start[0], y = start[1];
@@ -299,8 +302,8 @@
 						visited[x + i][y] = true;
 						parent[x + i][y] = [x, y];
 						if (x + i === end[0] && y === end[1]) {
-							var temp = [x + i, y];
-							while (temp[0] != -1) {
+							var temp = end;
+							while (temp && temp[0] != -1) {
 								que.unshift(temp);
 								temp = parent[temp[0]][temp[1]];
 							}
@@ -316,8 +319,8 @@
 						visited[x][y + i] = true;
 						parent[x][y + i] = [x, y];
 						if (x === end[0] && y + i === end[1]) {
-							var temp = [x, y + i];
-							while (temp[0] != -1) {
+							var temp = end;
+							while (temp && temp[0] != -1) {
 								que.unshift(temp);
 								temp = parent[temp[0]][temp[1]];
 							}
