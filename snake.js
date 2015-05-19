@@ -92,7 +92,7 @@
 		for (var i = 0; i < g.setting.size; i ++) {
 			t.push("<tr class = 'row' y = " + i + ">");
 			for (var j = 0; j < g.setting.size; j ++) {
-				t.push("<td id = 'box_" + j + "_" + i + "' inside = ' ' x = '" + j + "' y = '" + i + "'></td>");
+				t.push("<td id = 'box_" + j + "_" + i + "' inside = ' ' x = '" + j + "' y = '" + i + "' t=1></td>");
 			}
 			t.push("</tr>");
 		}
@@ -105,11 +105,15 @@
 		document.getElementById("score").innerHTML = score;
 		snake.init();
 		speed.disabled = start.disabled = false;
-		if (g.setting.func)
+		if (g.setting.func) {
 			window.clearInterval(g.setting.func);
-		for (var x = 0; x < g.setting.size; x ++)
-			for (var y = 0; y < g.setting.size; y ++)
+		}
+		for (var x = 0; x < g.setting.size; x ++) {
+			for (var y = 0; y < g.setting.size; y ++) {
 				g.attr(x, y, "class", " ");
+				g.attr(x, y, "inside", " ");
+			}
+		}
 	}
 	/*游戏开始*/
 	Game.prototype.start = function () {
@@ -117,8 +121,8 @@
 		snake.create();
 		g.setting.direct = g.direction.down;
 		g.setting.func = window.setInterval(function() {
-			snake.move();
 			snake.AIMode();
+			snake.move();
 		}, g.setting.speed)
 		//蛇移动
 		//g.setting.func = window.setInterval(function() {
@@ -214,37 +218,94 @@
 				else if (this.pos[this.pos.length - 2][0] - this.lastX == 1)
 					this.pos.push([this.lastX - 1, this.lastY]);
 			}
+			g.attr(this.lastX, this.lastY, "class", "snake");
 			this.lastX = this.pos[this.pos.length - 1][0];
 			this.lastY = this.pos[this.pos.length - 1][1];
 			g.attr(this.lastX, this.lastY, "class", "snake tail");
-			food.create();
 			score ++;
+			food.create();
 			document.getElementById("score").innerHTML = score;
 			g.attr(this.headX, this.headY, "inside", " ");
 		};
 		//撞到自己或者墙，游戏结束
 		for (var i = 1; i < this.pos.length; i ++) {
-			if (this.headX == this.pos[i][0] && this.headY == this.pos[i][1])
+			if (this.headX == this.pos[i][0] && this.headY == this.pos[i][1]) {
 				game.over();
-			else
+			}
+			else {
 				continue;
+			}
 		}
-		if (this.headX > (g.setting.size - 1) || this.headX < 0 || this.headY > (g.setting.size - 1) || this.headY < 0)
+		if (this.headX > (g.setting.size - 1) || this.headX < 0 || this.headY > (g.setting.size - 1) || this.headY < 0) {
 			game.over();
+		}
 	};
 	Snake.prototype.AIMode = function() {
 		var head = [this.headX, this.headY],
 			tail = [this.lastX, this.lastY],
 			foodPos = food.pos,
-			tailPath = this.existPath(tail, foodPos);
-		if (tailPath.length) {
-			var headPath = this.existPath(head, foodPos);
-			if (headPath.length) {
+			headPath = this.existPath(head, foodPos);
+		if (headPath.length) {
+			var test = [];
+			if (headPath.length <= this.pos.length) {
+				test = this.existPath(this.pos[this.pos.length - headPath.length], foodPos);
+			}
+			else {
+				test = this.existPath(headPath[headPath.length - this.pos.length - 1], foodPos);
+			}
+			if (test.length) {
 				this.path(head, foodPos);
+			}
+			else {
+				var fathest = this.farthest(head, foodPos, tail);
+				if (fathest.length) {
+					if (fathest[0] - head[0] > 0) {
+						g.setting.direct = g.direction.right;
+					}
+					else if (fathest[0] - head[0] < 0) {
+						g.setting.direct = g.direction.left;
+					}
+					else if (fathest[1] - head[1] > 0) {
+						g.setting.direct = g.direction.down;
+					}
+					else if (fathest[1] - head[1] < 0) {
+						g.setting.direct = g.direction.up;
+					}
+				}
+				else {
+					if (this.existPath(head, tail)) {
+						this.path(head, tail);
+					}
+					else {
+						this.struggle(head);
+					}
+				}
 			}
 		}
 		else {
-			this.path(head, tail);
+			var fathest = this.farthest(head, foodPos, tail);
+			if (fathest.length) {
+				if (fathest[0] - head[0] > 0) {
+					g.setting.direct = g.direction.right;
+				}
+				else if (fathest[0] - head[0] < 0) {
+					g.setting.direct = g.direction.left;
+				}
+				else if (fathest[1] - head[1] > 0) {
+					g.setting.direct = g.direction.down;
+				}
+				else if (fathest[1] - head[1] < 0) {
+					g.setting.direct = g.direction.up;
+				};
+			}
+			else {
+				if (this.existPath(head, tail).length) {
+					this.path(head, tail);
+				}
+				else {
+					this.struggle(head);
+				}
+			}
 		}
 	};
 	/* 算法JS实现 */
@@ -253,16 +314,54 @@
 		if (distance.length > 1) {
 			if (distance[1][0] - startX > 0) {
 				g.setting.direct = g.direction.right;
-			};
-			if (distance[1][0] - startX < 0) {
+			}
+			else if (distance[1][0] - startX < 0) {
 				g.setting.direct = g.direction.left;
-			};
-			if (distance[1][1] - startY > 0) {
+			}
+			else if (distance[1][1] - startY > 0) {
 				g.setting.direct = g.direction.down;
-			};
-			if (distance[1][1] - startY < 0) {
+			}
+			else if (distance[1][1] - startY < 0) {
 				g.setting.direct = g.direction.up;
-			};
+			}
+		}
+	}
+	/* 贪吃蛇头部附近找个距离食物最远的有效点 */
+	Snake.prototype.farthest = function(start, end, tail) {
+		var startX = start[0], startY = start[1], endX = end[0], endY = end[1], que = [], distance = [];
+		for (var i = -1; i <= 1; i ++) {
+			if (i === 0) {
+				continue;
+			}
+			else {
+				if (startX + i < g.setting.size
+					&& startX + i >= 0
+					&& g.attr(startX + i, startY, "class")
+					&& g.attr(startX + i, startY, "class").indexOf("snake") === -1
+					&& this.existPath([startX + i, startY], tail).length) {
+					que.push([startX + i, startY])
+				}
+				if (startY + i < g.setting.size
+					&& startY + i >= 0
+					&& g.attr(startX, startY + i, "class")
+					&& g.attr(startX, startY + i, "class").indexOf("snake") === -1
+					&& this.existPath([startX, startY + i], tail).length) {
+					que.push([startX, startY + i])
+				}
+			}
+		}
+		for (var i = 0; i < que.length; i ++) {
+			var dis = Math.sqrt(Math.pow(endX - que[i][0], 2) + Math.pow(endY - que[i][1], 2));
+			distance.push([dis, que[i]]);
+		}
+		distance.sort(function(a, b) {
+			return b[0] - a[0];
+		})
+		if (distance.length) {
+			return distance[0][1];
+		}
+		else {
+			return distance;
 		}
 	}
 	/* BFS算法实现寻找路径 */
@@ -310,7 +409,7 @@
 						}
 					}
 					if (y + i < g.setting.size
-						&& y + i >=0
+						&& y + i >= 0
 						&& g.attr(x, y + i, "class")
 						&& (g.attr(x, y + i, "class").indexOf("snake") == -1
 							|| g.attr(x, y + i, "class").indexOf("tail") != -1)
@@ -331,7 +430,62 @@
 		}
 		return que;
 	}
-	
+	/* 实在没辙就只能就近做S形运动苟延残喘 */
+	Snake.prototype.struggle = function(head) {
+		var t = [-1, 1], x = head[0], y = head[1], que = [], die = 0;
+		switch(g.setting.direct) {
+			case g.direction.up:
+				if (y - 1 < 0 || g.attr(x, y - 1, "class").indexOf("snake") != -1) {
+					die = 1;
+				}
+				break;
+			case g.direction.down:
+				if (y + 1 >= g.setting.size || g.attr(x, y + 1, "class").indexOf("snake") != -1) {
+					die = 1;
+				}
+				break;
+			case g.direction.left:
+				if (x - 1 < 0 || g.attr(x - 1, y, "class").indexOf("snake") != -1) {
+					die = 1;
+				}
+				break;
+			case g.direction.right:
+				if (x + 1 >= g.setting.size || g.attr(x + 1, y, "class").indexOf("snake") != -1) {
+					die = 1;
+				}
+				break;
+		}
+		if (die) {
+			for (var i = 0; i < 2; i ++) {
+				if (x + t[i] < g.setting.size
+					&& x + t[i] >= 0
+					&& g.attr(x + t[i], y, "class")
+					&& g.attr(x + t[i], y, "class").indexOf("snake") == -1) {
+					que.push([x + t[i], y]);
+				}
+				if (y + t[i] < g.setting.size
+					&& y + t[i] >= 0
+					&& g.attr(x, y + t[i], "class")
+					&& g.attr(x, y + t[i], "class").indexOf("snake") == -1) {
+					que.push([x, y + t[i]]);
+				}
+			}
+			if (que.length) {
+				if (que[0][0] - head[0] > 0) {
+					g.setting.direct = g.direction.right;
+				}
+				else if (que[0][0] - head[0] < 0) {
+					g.setting.direct = g.direction.left;
+				}
+				else if (que[0][1] - head[1] > 0) {
+					g.setting.direct = g.direction.down;
+				}
+				else if (que[0][1] - head[1] < 0) {
+					g.setting.direct = g.direction.up;
+				}
+			}
+		}
+	}
 	/*Food构造器*/
 	function Food () {
 		this.pos = [];
@@ -343,8 +497,8 @@
 		y = g.create(0, g.setting.size);
 		//检查是否与蛇的位置重合
 		var c = g.attr(x, y, "class");
-		if (c == "snake")
-			return that.create();
+		if (c.indexOf("snake") != -1)
+			return this.create();
 		else {
 			g.attr(x, y, "class", "food");
 			g.attr(x, y, "inside", "food");
