@@ -277,7 +277,7 @@
 						this.path(head, tail);
 					}
 					else {
-						this.struggle(head);
+						this.path(head, foodPos);
 					}
 				}
 			}
