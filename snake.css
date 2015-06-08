@@ -87,7 +87,7 @@ select {
 	border-radius: 5px;
 }
 .food {
-	background: green;
+	background: blue;
 }
 .snake {
 	background: white;
@@ -96,7 +96,7 @@ select {
 	background: red;
 }
 .tail {
-	background: blue;
+	background: green;
 }
 
 .switch {

@@ -75,7 +75,7 @@
 		},
 		//游戏设定
 		setting : {
-			size : 20,
+			size : 19,
 			speed : 500,
 			len : 3,
 			func : null,
