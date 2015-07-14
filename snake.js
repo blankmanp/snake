@@ -504,6 +504,7 @@
 			for (var y = 0; y < g.setting.size; y ++) {
 				g.attr(x, y, "class", " ");
 				g.attr(x, y, "inside", " ");
+				g.attr(x, y, 'touchable', '1');
 			}
 		}
 	}
