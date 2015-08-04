@@ -519,10 +519,6 @@
 			that.snake.AIMode();
 			that.snake.move();
 		}, g.setting.speed)
-		//蛇移动
-		//g.setting.func = window.setInterval(function() {
-		//	snake.move();
-		//}, g.setting.speed);
 	}
 	/*监听键盘*/
 	Game.prototype.listen = function (e) {
