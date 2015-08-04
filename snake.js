@@ -94,12 +94,13 @@
 			this.lastX = 0;
 			this.lastY = 0;
 			this.pos = [];
+			this.f = 0;
+			this.h = 0;
 			this.food = food;
 		};
 		Snake.prototype.init = function () {
 			this.headX = this.headY = this.lastX = this.lastY = 0;
 			this.pos = [];
-			this.food = food;
 		}
 		/*创建蛇*/
 		Snake.prototype.create = function () {
@@ -226,7 +227,7 @@
 						}
 					}
 					else {
-						if (this.existPath(head, tail).length) {
+						if (this.existPath(head, tail)) {
 							this.path(head, tail);
 						}
 						else {
@@ -514,18 +515,14 @@
 		this.snake.create();
 		g.setting.direct = g.direction.down;
 		var that = this;
-		if (document.getElementsByClassName("switch-animate")[0].className.indexOf("switch-on") != -1) {
-			g.setting.func = window.setInterval(function() {
-				that.snake.AIMode();
-				that.snake.move();
-			}, g.setting.speed)
-		}
-		else {
-			window.onkeydown = this.listen;
-			g.setting.func = window.setInterval(function() {
-				that.snake.move();
-			}, g.setting.speed);
-		}
+		g.setting.func = window.setInterval(function() {
+			that.snake.AIMode();
+			that.snake.move();
+		}, g.setting.speed)
+		//蛇移动
+		//g.setting.func = window.setInterval(function() {
+		//	snake.move();
+		//}, g.setting.speed);
 	}
 	/*监听键盘*/
 	Game.prototype.listen = function (e) {
@@ -569,6 +566,7 @@
 		g.setting.speed = speed.options[speed.selectedIndex].value;
 		speed.disabled = true;
 		gameAi.start();
+		//window.onkeydown = game.listen;
 	};
 	function switchChange() {
 		var cla = this.firstChild.className.split(" ");
