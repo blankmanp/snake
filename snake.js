@@ -1,3 +1,4 @@
+//todo 使用canvas
 (function () {
 	/*全局变量*/
 	var g = {
@@ -75,10 +76,9 @@
 		},
 		//游戏设定
 		setting : {
-			size : 19,
+			size : 20,
 			speed : 500,
 			len : 3,
-			func : null,
 			direct : null
 		}
 	}
@@ -86,9 +86,17 @@
 	function Game (food) {
 		this.snake = new Snake(food);
 		this.food = food;
+		this.func = null;
 		var that = this;
 		/*Snake构造器*/
 		function Snake (food) {
+			this.map = (function() {
+				var arr = new Array(g.setting.size);
+				for (var i = 0; i < g.setting.size; i ++) {
+					arr[i] = new Array(g.setting.size);
+				}
+				return arr;
+			}());//坐标地图的映射，和蛇的类绑定，1表示可以走，0表示不可以走【个人感觉有点不科学。。。。远目】;
 			this.headX = 0;
 			this.headY = 0;
 			this.lastX = 0;
@@ -97,10 +105,16 @@
 			this.f = 0;
 			this.h = 0;
 			this.food = food;
+			this.direction = null;
 		};
 		Snake.prototype.init = function () {
 			this.headX = this.headY = this.lastX = this.lastY = 0;
 			this.pos = [];
+			for (var x = 0; x < g.setting.size; x ++) {
+				for (var y = 0; y < g.setting.size; y ++) {
+					this.map[x][y] = 1;
+				}
+			}
 		}
 		/*创建蛇*/
 		Snake.prototype.create = function () {
@@ -112,15 +126,15 @@
 				this.pos.push([x, y]);
 				if (i === 0) {
 					g.attr(x, y, "class", "snake head");
-					g.attr(x, y, "touchable", "0");
+					this.map[x][y] = 0;
 				}
 				else if (i === g.setting.len - 1){
 					g.attr(x, y, "class", "snake tail")
-					g.attr(x, y, "touchable", "1");
+					this.map[x][y] = 1;
 				}
 				else {
 					g.attr(x, y, "class", "snake");
-					g.attr(x, y, "touchable", "0");
+					this.map[x][y] = 0;
 				}
 			}
 			this.headX = this.pos[0][0];
@@ -130,6 +144,7 @@
 		};
 		/*移动*/
 		Snake.prototype.move = function () {
+			var len = this.pos.length;
 			this.headX = this.pos[0][0];
 			this.headY = this.pos[0][1];
 			this.lastX = this.pos[this.pos.length - 1][0];
@@ -140,10 +155,10 @@
 				this.pos[i][1] = this.pos[i - 1][1];
 			}
 			if (command.length == 0)
-				command.push(g.setting.direct);
-			g.setting.direct = command.shift();
+				command.push(this.direction);
+			this.direction = command.shift();
 			command = [];
-			switch (g.setting.direct) {
+			switch (this.direction) {
 				case g.direction.up : this.headY    -= 1; break;
 				case g.direction.down : this.headY  += 1; break;
 				case g.direction.left : this.headX  -= 1; break;
@@ -151,37 +166,82 @@
 			}
 			this.pos[0][0] = this.headX;
 			this.pos[0][1] = this.headY;
-			this.lastX = this.pos[this.pos.length - 1][0];
-			this.lastY = this.pos[this.pos.length - 1][1];
-			for (var i = 0; i < this.pos.length; i ++) {
+			this.lastX = this.pos[len - 1][0];
+			this.lastY = this.pos[len - 1][1];
+			for (var i = 0; i < len; i ++) {
 				g.attr(this.pos[i][0], this.pos[i][1], "class", "snake");
-				g.attr(this.pos[i][0], this.pos[i][1], "touchable", "0");
+				this.map[this.pos[i][0]][this.pos[i][1]] = 0;
 			}
 			g.attr(this.headX, this.headY, "class", "snake head");
 			g.attr(this.lastX, this.lastY, "class", "snake tail");
-			g.attr(this.lastX, this.lastY, "touchable", "1");
+			this.map[this.lastX][this.lastY] = 1
 			var inside = g.attr(this.headX, this.headY, "inside");
 			if (inside == "food") {
-				this.lastX = this.pos[this.pos.length - 1][0];
-				this.lastY = this.pos[this.pos.length - 1][1];
-				if (this.lastX == this.pos[this.pos.length - 2][0]) {
-					if (this.lastY - this.pos[this.pos.length - 2][1] == 1)
-						this.pos.push([this.lastX, this.lastY + 1]);
-					else if (this.pos[this.pos.length - 2][1] - this.lastY == 1)
-						this.pos.push([this.lastX, this.lastY - 1]);
+				this.lastX = this.pos[len - 1][0];
+				this.lastY = this.pos[len - 1][1];
+				if (this.lastX == this.pos[len - 2][0]) {
+					if (this.lastY - this.pos[len - 2][1] == 1) {
+						if (this.lastY + 1 < g.setting.size) {
+							this.pos.push([this.lastX, this.lastY + 1]);
+						}
+						else {
+							if (this.lastX + 1 < g.setting.size && g.attr(this.lastX + 1, this.lastY, 'class').indexOf('snake') === -1) {
+								this.pos.push([this.lastX + 1, this.lastY]);
+							}
+							else if (this.lastX > 0 && g.attr(this.lastX - 1, this.lastY, 'class').indexOf('snake') === -1) {
+								this.pos.push([this.lastX - 1, this.lastY]);
+							}
+						}
+					}
+					else if (this.pos[len - 2][1] - this.lastY == 1) {
+						if (this.lastY > 0) {
+							this.pos.push([this.lastX, this.lastY - 1]);
+						}
+						else {
+							if (this.lastX + 1 < g.setting.size && g.attr(this.lastX + 1, this.lastY, 'class').indexOf('snake') === -1) {
+								this.pos.push([this.lastX + 1, this.lastY]);
+							}
+							else if (this.lastX > 0 && g.attr(this.lastX - 1, this.lastY, 'class').indexOf('snake') === -1) {
+								this.pos.push([this.lastX - 1, this.lastY]);
+							}
+						}
+					}
 				}
-				else if (this.lastY == this.pos[this.pos.length - 2][1]) {
-					if (this.lastX - this.pos[this.pos.length - 2][0] == 1)
-						this.pos.push([this.lastX + 1, this.lastY])
-					else if (this.pos[this.pos.length - 2][0] - this.lastX == 1)
-						this.pos.push([this.lastX - 1, this.lastY]);
+				else if (this.lastY == this.pos[len - 2][1]) {
+					if (this.lastX - this.pos[len - 2][0] == 1) {
+						if (this.lastX + 1 < g.setting.size) {
+							this.pos.push([this.lastX + 1, this.lastY])
+						}
+						else {
+							if (this.lastY + 1 < g.setting.size && g.attr(this.lastX, this.lastY + 1, 'class').indexOf('snake') === -1) {
+								this.pos.push([this.lastX, this.lastY + 1]);
+							}
+							else if (this.lastY > 0 && g.attr(this.lastX, this.lastY - 1, 'class').indexOf('snake') === -1) {
+								this.pos.push([this.lastX, this.lastY - 1]);
+							}
+						}
+					}
+					else if (this.pos[len - 2][0] - this.lastX == 1) {
+						if (this.lastX > 0) {
+							this.pos.push([this.lastX - 1, this.lastY]);
+						}
+						else {
+							if (this.lastY + 1 < g.setting.size && g.attr(this.lastX, this.lastY + 1, 'class').indexOf('snake') === -1) {
+								this.pos.push([this.lastX, this.lastY + 1]);
+							}
+							else if (this.lastY > 0 && g.attr(this.lastX, this.lastY - 1, 'class').indexOf('snake') === -1) {
+								this.pos.push([this.lastX, this.lastY - 1]);
+							}
+						}
+					}
 				}
+				len = this.pos.length;
 				g.attr(this.lastX, this.lastY, "class", "snake");
-				g.attr(this.lastX, this.lastY, "touchable", "0");
-				this.lastX = this.pos[this.pos.length - 1][0];
-				this.lastY = this.pos[this.pos.length - 1][1];
+				this.map[this.lastX][this.lastY] = 0;
+				this.lastX = this.pos[len - 1][0];
+				this.lastY = this.pos[len - 1][1];
 				g.attr(this.lastX, this.lastY, "class", "snake tail");
-				g.attr(this.lastX, this.lastY, "touchable", "1");
+				this.map[this.lastX][this.lastY] = 1;
 				score ++;
 				this.food.create();
 				document.getElementById("score").innerHTML = score;
@@ -214,20 +274,20 @@
 					var fathest = this.farthest(head, foodPos, tail);
 					if (fathest.length) {
 						if (fathest[0] - head[0] > 0) {
-							g.setting.direct = g.direction.right;
+							this.direction = g.direction.right;
 						}
 						else if (fathest[0] - head[0] < 0) {
-							g.setting.direct = g.direction.left;
+							this.direction = g.direction.left;
 						}
 						else if (fathest[1] - head[1] > 0) {
-							g.setting.direct = g.direction.down;
+							this.direction = g.direction.down;
 						}
 						else if (fathest[1] - head[1] < 0) {
-							g.setting.direct = g.direction.up;
+							this.direction = g.direction.up;
 						}
 					}
 					else {
-						if (this.existPath(head, tail)) {
+						if (this.existPath(head, tail).length) {
 							this.path(head, tail);
 						}
 						else {
@@ -240,16 +300,16 @@
 				var fathest = this.farthest(head, foodPos, tail);
 				if (fathest.length) {
 					if (fathest[0] - head[0] > 0) {
-						g.setting.direct = g.direction.right;
+						this.direction = g.direction.right;
 					}
 					else if (fathest[0] - head[0] < 0) {
-						g.setting.direct = g.direction.left;
+						this.direction = g.direction.left;
 					}
 					else if (fathest[1] - head[1] > 0) {
-						g.setting.direct = g.direction.down;
+						this.direction = g.direction.down;
 					}
 					else if (fathest[1] - head[1] < 0) {
-						g.setting.direct = g.direction.up;
+						this.direction = g.direction.up;
 					};
 				}
 				else {
@@ -267,16 +327,16 @@
 			var startX = sta[0], startY = sta[1], distance = this.existPath(sta, end);
 			if (distance.length > 1) {
 				if (distance[1][0] - startX > 0) {
-					g.setting.direct = g.direction.right;
+					this.direction = g.direction.right;
 				}
 				else if (distance[1][0] - startX < 0) {
-					g.setting.direct = g.direction.left;
+					this.direction = g.direction.left;
 				}
 				else if (distance[1][1] - startY > 0) {
-					g.setting.direct = g.direction.down;
+					this.direction = g.direction.down;
 				}
 				else if (distance[1][1] - startY < 0) {
-					g.setting.direct = g.direction.up;
+					this.direction = g.direction.up;
 				}
 			}
 		}
@@ -290,13 +350,13 @@
 				else {
 					if (startX + i < g.setting.size
 						&& startX + i >= 0
-						&& g.attr(startX + i, startY, "touchable") === '1'
+						&& this.map[startX + i][startY] === 1
 						&& this.existPath([startX + i, startY], tail).length) {
 						que.push([startX + i, startY])
 					}
 					if (startY + i < g.setting.size
 						&& startY + i >= 0
-						&& g.attr(startX, startY + i, "touchable") === '1'
+						&& this.map[startX][startY + i] === 1
 						&& this.existPath([startX, startY + i], tail).length) {
 						que.push([startX, startY + i])
 					}
@@ -322,48 +382,47 @@
 			if (path.length >= pos.length) {
 				for (var i = path.length - 1; i >= path.length - pos.length; i --) {
 					if (i === path.length - pos.length) {
-						g.attr(path[i][0], path[i][1], "touchable", '1');
+						this.map[path[i][0]][path[i][1]] = 1;
 					}
 					else {
-						g.attr(path[i][0], path[i][1], "touchable", '0');
+						this.map[path[i][0]][path[i][1]] = 0;
 					}
 				}
 				for (var i = 0; i < pos.length; i ++) {
-					g.attr(pos[i][0], pos[i][1], "touchable", "1");
+					this.map[pos[i][0]][pos[i][1]] = 1;
 				}
 				temp = this.existPath(path[path.length - 1], path[path.length - pos.length]);
 			}
 			else {
 				if (path.length > 2) {
 					for (var i = pos.length - 1; i >= pos.length - path.length; i --) {
-						g.attr(pos[i][0], pos[i][1], "touchable", "1");
+						this.map[pos[i][0]][pos[i][1]] = 1;
 					}
 					for (var i = 0; i < path.length; i ++) {
-						g.attr(path[i][0], path[i][1], "touchable", "0");
+						this.map[path[i][0]][path[i][1]] = 0;
 					}
 					temp = this.existPath(path[path.length - 1], pos[pos.length - path.length]);
 				}
 				else {
-					g.attr(pos[pos.length - 1][0], pos[pos.length - 1][1], "touchable", "1");
+					this.map[pos[pos.length - 1][0]][pos[pos.length - 1][1]] = 1;
 					for (var i = 0; i < path.length; i ++) {
-						g.attr(path[i][0], path[i][1], "touchable", "0");
+						this.map[path[i][0]][path[i][1]] = 0;
 					}
 					temp = this.existPath(path[path.length - 1], pos[pos.length - 1]);
 				}
 			}
 			for (var i = path.length - 1; i >= 0; i --) {
-				g.attr(path[i][0], path[i][1], "touchable", "1");
+				this.map[path[i][0]][path[i][1]] = 1;
 			}
 			for (var i = pos.length - 2; i >= 0; i --) {
-				g.attr(pos[i][0], pos[i][1], "touchable", "0");
+				this.map[pos[i][0]][pos[i][1]] = 0;
 			}
-			g.attr(pos[pos.length - 1][0], pos[pos.length - 1][1], "touchable", "1");
+			this.map[pos[pos.length - 1][0]][pos[pos.length - 1][1]] = 1;
 			return temp;
 		}
 		/* BFS算法实现寻找路径 */
 		Snake.prototype.existPath = function(start, end) {
-			var visited = [], que = [], parent = [];
-			var sta = start;
+			var visited = [], que = [], parent = [], sta = start;
 			for (var i = 0; i < g.setting.size; i ++) {
 				visited[i] = [];
 				parent[i] = [];
@@ -375,8 +434,9 @@
 			var tempque = [];
 			tempque.push(start);
 			if (start) {
-				if (visited[start[0]])
+				if (visited[start[0]]) {
 					visited[start[0]][start[1]] = true;
+				}
 			}
 			while (tempque.length) {
 				start = tempque.shift();
@@ -388,7 +448,7 @@
 					else {
 						if (x + i < g.setting.size
 							&& x + i >= 0
-							&& (g.attr(x + i, y, "touchable") === '1')
+							&& this.map[x + i][y] === 1
 							&& !visited[x + i][y]) {
 							tempque.push([x + i, y]);
 							visited[x + i][y] = true;
@@ -403,7 +463,7 @@
 						}
 						if (y + i < g.setting.size
 							&& y + i >= 0
-							&& (g.attr(x, y + i, "touchable") === '1')
+							&& this.map[x][y + i] === 1
 							&& !visited[x][y + i]) {
 							tempque.push([x, y + i]);
 							visited[x][y + i] = true;
@@ -424,7 +484,7 @@
 		/* 实在没辙就只能就近做S形运动苟延残喘 */
 		Snake.prototype.struggle = function(head) {
 			var t = [-1, 1], x = head[0], y = head[1], que = [], die = 0;
-			switch(g.setting.direct) {
+			switch(this.direction) {
 				case g.direction.up:
 					if (y - 1 < 0 || g.attr(x, y - 1, "class").indexOf("snake") != -1) {
 						die = 1;
@@ -463,16 +523,16 @@
 				}
 				if (que.length) {
 					if (que[0][0] - head[0] > 0) {
-						g.setting.direct = g.direction.right;
+						this.direction = g.direction.right;
 					}
 					else if (que[0][0] - head[0] < 0) {
-						g.setting.direct = g.direction.left;
+						this.direction = g.direction.left;
 					}
 					else if (que[0][1] - head[1] > 0) {
-						g.setting.direct = g.direction.down;
+						this.direction = g.direction.down;
 					}
 					else if (que[0][1] - head[1] < 0) {
-						g.setting.direct = g.direction.up;
+						this.direction = g.direction.up;
 					}
 				}
 			}
@@ -485,7 +545,7 @@
 		for (var i = 0; i < g.setting.size; i ++) {
 			t.push("<tr class = 'row' y = " + i + ">");
 			for (var j = 0; j < g.setting.size; j ++) {
-				t.push("<td id = 'box_" + j + "_" + i + "' inside = ' ' x = '" + j + "' y = '" + i + "' touchable=1></td>");
+				t.push("<td id = 'box_" + j + "_" + i + "' inside = ' ' x = '" + j + "' y = '" + i + "'></td>");
 			}
 			t.push("</tr>");
 		}
@@ -494,28 +554,28 @@
 	};
 	/*初始化游戏*/
 	Game.prototype.init = function () {
+		var that = this;
 		score = 0;
 		document.getElementById("score").innerHTML = score;
 		this.snake.init();
 		speed.disabled = start.disabled = false;
-		if (g.setting.func) {
-			window.clearInterval(g.setting.func);
+		if (this.func) {
+			clearInterval(this.func);
 		}
 		for (var x = 0; x < g.setting.size; x ++) {
 			for (var y = 0; y < g.setting.size; y ++) {
 				g.attr(x, y, "class", " ");
 				g.attr(x, y, "inside", " ");
-				g.attr(x, y, 'touchable', '1');
 			}
 		}
 	}
 	/*游戏开始*/
 	Game.prototype.start = function () {
+		var that = this;
 		this.food.create();
 		this.snake.create();
-		g.setting.direct = g.direction.down;
-		var that = this;
-		g.setting.func = window.setInterval(function() {
+		this.snake.direction = g.direction.down;
+		this.func = setInterval(function() {
 			that.snake.AIMode();
 			that.snake.move();
 		}, g.setting.speed)
@@ -523,7 +583,7 @@
 	/*监听键盘*/
 	Game.prototype.listen = function (e) {
 		e = e || event;
-		command.push(Math.abs(e.keyCode - g.setting.direct) != 2 && e.keyCode > 36 && e.keyCode < 41 ? e.keyCode : g.setting.direct);
+		command.push(Math.abs(e.keyCode - this.snake.direction) != 2 && e.keyCode > 36 && e.keyCode < 41 ? e.keyCode : this.snake.direction);
 	}
 	/*游戏结束*/
 	Game.prototype.over = function () {
@@ -560,6 +620,7 @@
 	function gameStart() {
 		this.disabled = true;
 		g.setting.speed = speed.options[speed.selectedIndex].value;
+		isAI = document.getElementsByClassName('switch-animate')[0].getAttribute('class').indexOf('on') === -1 ? false : true
 		speed.disabled = true;
 		gameAi.start();
 		//window.onkeydown = game.listen;
