@@ -379,8 +379,8 @@
 		/* 移动一条假蛇去吃食物以检查路径是否安全 */
 		Snake.prototype.fakemove = function(pos, path) {
 			var temp = [];
-			if (path.length >= pos.length) {
-				for (var i = path.length - 1; i >= path.length - pos.length; i --) {
+			if (path.length > pos.length) {
+				for (var i = path.length - 1; i > path.length - pos.length; i --) {
 					if (i === path.length - pos.length) {
 						this.map[path[i][0]][path[i][1]] = 1;
 					}
@@ -391,17 +391,31 @@
 				for (var i = 0; i < pos.length; i ++) {
 					this.map[pos[i][0]][pos[i][1]] = 1;
 				}
-				temp = this.existPath(path[path.length - 1], path[path.length - pos.length]);
+				temp = this.existPath(path[path.length - 1], path[path.length - pos.length - 1]);
+			}
+			else if (path.length === pos.length) {
+				for (var i = path.length - 1; i > path.length - pos.length; i --) {
+					if (i === path.length - pos.length) {
+						this.map[path[i][0]][path[i][1]] = 1;
+					}
+					else {
+						this.map[path[i][0]][path[i][1]] = 0;
+					}
+				}
+				for (var i = 0; i < pos.length; i ++) {
+					this.map[pos[i][0]][pos[i][1]] = 1;
+				}
+				temp = this.existPath(path[path.length - 1], pos[2]);
 			}
 			else {
 				if (path.length > 2) {
-					for (var i = pos.length - 1; i >= pos.length - path.length; i --) {
+					for (var i = pos.length - 1; i > pos.length - path.length; i --) {
 						this.map[pos[i][0]][pos[i][1]] = 1;
 					}
 					for (var i = 0; i < path.length; i ++) {
 						this.map[path[i][0]][path[i][1]] = 0;
 					}
-					temp = this.existPath(path[path.length - 1], pos[pos.length - path.length]);
+					temp = this.existPath(path[path.length - 1], pos[pos.length - path.length + 1]);
 				}
 				else {
 					this.map[pos[pos.length - 1][0]][pos[pos.length - 1][1]] = 1;
