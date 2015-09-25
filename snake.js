@@ -108,7 +108,7 @@
 			this.direction = null;
 		};
 		Snake.prototype.init = function () {
-			this.headX = this.headY = this.lastX = this.lastY = 0;
+			this.headX = this.headY = this.lastX = this.lastY = this.f = this.h = 0;
 			this.pos = [];
 			for (var x = 0; x < g.setting.size; x ++) {
 				for (var y = 0; y < g.setting.size; y ++) {
