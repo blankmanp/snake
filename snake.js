@@ -584,20 +584,26 @@
 		}
 	}
 	/*游戏开始*/
-	Game.prototype.start = function () {
+	Game.prototype.start = function (isAI) {
 		var that = this;
 		this.food.create();
 		this.snake.create();
 		this.snake.direction = g.direction.down;
-		this.func = setInterval(function() {
-			that.snake.AIMode();
-			that.snake.move();
-		}, g.setting.speed)
-	}
-	/*监听键盘*/
-	Game.prototype.listen = function (e) {
-		e = e || event;
-		command.push(Math.abs(e.keyCode - this.snake.direction) != 2 && e.keyCode > 36 && e.keyCode < 41 ? e.keyCode : this.snake.direction);
+		if (isAI) {
+			this.func = setInterval(function() {
+				that.snake.AIMode();
+				that.snake.move();
+			}, g.setting.speed)
+		}
+		else {
+			window.onkeydown = function(e) {
+				e = e || event;
+				command.push(Math.abs(e.keyCode - that.snake.direction) != 2 && e.keyCode > 36 && e.keyCode < 41 ? e.keyCode : that.snake.direction);
+			};
+			this.func = setInterval(function() {
+				that.snake.move();
+			}, g.setting.speed)
+		}
 	}
 	/*游戏结束*/
 	Game.prototype.over = function () {
@@ -636,8 +642,7 @@
 		g.setting.speed = speed.options[speed.selectedIndex].value;
 		isAI = document.getElementsByClassName('switch-animate')[0].getAttribute('class').indexOf('on') === -1 ? false : true
 		speed.disabled = true;
-		gameAi.start();
-		//window.onkeydown = game.listen;
+		gameAi.start(isAI);
 	};
 	function switchChange() {
 		var cla = this.firstChild.className.split(" ");
